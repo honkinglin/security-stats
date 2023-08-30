@@ -10,7 +10,7 @@ function App() {
         <SecurityDate data={data} />
       </div>
 
-      <div className="fixed bottom-4 right-4">
+      <div className="fixed bottom-4 right-4 flex">
         <a href="https://github.com/honkinglin/security-stats" target="_blank">
           <img width={32} src={githubLogo} alt="github" />
         </a>
