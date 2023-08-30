@@ -63,13 +63,13 @@ export default function VisaType(props) {
           labels: barData.map((row) => row.yearMonth),
           datasets: [
             {
-              label: "工签",
-              data: barData.map((row) => row.workCount),
+              label: "学签",
+              data: barData.map((row) => row.studyCount),
               stack: "Stack 0",
             },
             {
-              label: "学签",
-              data: barData.map((row) => row.studyCount),
+              label: "工签",
+              data: barData.map((row) => row.workCount),
               stack: "Stack 0",
             },
             {
