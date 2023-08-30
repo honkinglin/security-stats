@@ -17,4 +17,4 @@ pnpm run dev
 
 不要放弃，不要气馁。我们可以相互支持，共同度过这个难关。相信我们的力量，相信我们的未来。
 
-![二维码](./public/qrcode.jpg)
+<img src="./public/qrcode.jpg" width="280" />
