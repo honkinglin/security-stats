@@ -39,12 +39,12 @@ export default function SecurityDate(props) {
   useEffect(() => {
     const chart = new Chart(
       canvasRef.current,
-      merge(lineConfig, {
+      merge({}, lineConfig, {
         data: {
           labels: lineData.map((row) => row.yearMonth),
           datasets: [
             {
-              label: "安调人数",
+              label: "总安调人数",
               data: lineData.map((row) => row.count),
             },
           ],
@@ -53,7 +53,7 @@ export default function SecurityDate(props) {
           plugins: {
             title: {
               display: true,
-              text: "安调月份统计",
+              text: "总安调月份统计",
             },
           },
         },

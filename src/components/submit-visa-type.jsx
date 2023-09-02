@@ -20,13 +20,13 @@ export default function VisaType(props) {
     const countMap = new Map();
 
     data.forEach((item) => {
-      const { securityDate, visaType } = item;
-      if (securityDate) {
-        const year = dayjs(securityDate).year();
-        const month = dayjs(securityDate).month() + 1;
+      const { submitDate, securityDate, visaType } = item;
+      if (securityDate && submitDate) {
+        const year = dayjs(submitDate).year();
+        const month = dayjs(submitDate).month() + 1;
 
         if (isNaN(year) || isNaN(month)) {
-          return console.log("isNaN Data:", securityDate);
+          return console.log("isNaN Data:", submitDate);
         }
 
         const key = `${year}-${month}`;
@@ -88,7 +88,7 @@ export default function VisaType(props) {
           plugins: {
             title: {
               display: true,
-              text: "各个签证类型安调月份统计",
+              text: "安调中各签证类型递签月份统计",
             },
           },
         },
@@ -99,5 +99,5 @@ export default function VisaType(props) {
     };
   }, [barData]);
 
-  return <canvas ref={canvasRef} id="VisaType"></canvas>;
+  return <canvas ref={canvasRef} id="SubmitVisaType"></canvas>;
 }

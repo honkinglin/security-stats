@@ -2,7 +2,11 @@ import data from "../public/data.json";
 import logo from "../public/logo.svg";
 import githubLogo from "./assets/github-mark.svg";
 import SecurityDate from "./components/security-date.jsx";
+import SubmitVisaType from "./components/submit-visa-type.jsx";
 import VisaType from "./components/visa-type.jsx";
+import VisaTypeOpr from "./components/visa-type-opr.jsx";
+import InjunctionOpr from "./components/injunction-opr.jsx";
+import InjunctionDate from "./components/injunction-date.jsx";
 
 function App() {
   return (
@@ -19,7 +23,11 @@ function App() {
       </header>
       <div className="container mx-auto py-4">
         <SecurityDate data={data} />
+        <SubmitVisaType data={data} />
         <VisaType data={data} />
+        <VisaTypeOpr data={data} />
+        <InjunctionOpr data={data} />
+        <InjunctionDate data={data} />
       </div>
     </main>
   );
