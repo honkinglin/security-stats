@@ -1,77 +1,40 @@
 import { useEffect, useRef, useState } from "react";
+import dayjs from "dayjs";
 import Chart from "chart.js/auto";
 import barConfig from "../config/bar";
 import merge from "lodash/merge";
 
-function getNrDaysKey(days) {
-  if (typeof days !== 'number') return false;
-  if (days <= 7) return '<=7';
-  if (days <= 14) return '7-14';
-  if (days <= 21) return '14-21';
-  if (days <= 28) return '21-28';
-  if (days <= 35) return '28-35';
-  if (days <= 42) return '35-42';
-  if (days <= 49) return '42-49';
-  return '>50';
+function getMapKey(isInjunctionSuccess = "") {
+  if (!isInjunctionSuccess) return "无强制令";
+  if (/是/gi.test(isInjunctionSuccess)) return "强制令成功";
+  if (/否/gi.test(isInjunctionSuccess)) return "强制令失败";
+  if (/等待中/gi.test(isInjunctionSuccess)) return "强制令等待中";
+  return "未知";
 }
 
-function getInjunctionDaysKey(days) {
-  if (typeof days !== 'number') return false;
-  if (days <= 14) return '<=14';
-  if (days <= 21) return '14-21';
-  if (days <= 28) return '21-28';
-  if (days <= 35) return '28-35';
-  if (days <= 42) return '35-42';
-  if (days <= 49) return '42-49';
-  if (days <= 56) return '49-56';
-  if (days <= 63) return '56-63';
-  if (days <= 70) return '63-70';
-  if (days <= 77) return '70-77';
-  if (days <= 84) return '77-84';
-  return '>84';
-}
-
-export default function InjunctionToOpr(props) {
+export default function VisaType(props) {
   const { data } = props;
   const canvasRef = useRef(null);
-  const canvasRef2 = useRef(null);
-  const [nrBarData, setNrBarData] = useState([]);
-  const [injunctionBarData, setInjunctionBarData] = useState([]);
+  const [barData, setBarData] = useState([]);
 
   useEffect(() => {
-    const nrCountMap = new Map();
-    const injunctionCountMap = new Map();
-
+    const countMap = new Map();
     data.forEach((item) => {
-      const { nrToOprDays, firstInjunctionToOprDays } = item;
+      const { isInjunctionSuccess, oprDate } = item;
+      const key = getMapKey(isInjunctionSuccess);
 
-      const nrToOprDaysKey = getNrDaysKey(nrToOprDays);
-      if (nrToOprDaysKey) {
-        nrCountMap.set(nrToOprDaysKey, (nrCountMap.get(nrToOprDaysKey) || 0) + 1);
-      }
-
-      const firstInjunctionToOprDaysKey = getInjunctionDaysKey(firstInjunctionToOprDays);
-      if (firstInjunctionToOprDaysKey) {
-        injunctionCountMap.set(firstInjunctionToOprDaysKey, (injunctionCountMap.get(firstInjunctionToOprDaysKey) || 0) + 1);
-      }
+      const prevValue = countMap.get(key);
+      countMap.set(key, {
+        isOpr: oprDate ? (prevValue?.isOpr || 0) + 1 : (prevValue?.isOpr || 0),
+        notOpr: oprDate ? (prevValue?.notOpr || 0) : (prevValue?.notOpr || 0) + 1,
+      });
     });
     const list = [];
-    const list2 = [];
-
-    nrCountMap.forEach((value, key) => {
-      list.push({ days: key, nrToOprDays: value });
-    });
-    injunctionCountMap.forEach((value, key) => {
-      list2.push({ days: key, firstInjunctionToOprDays: value });
-    });
-    list.sort((a, b) => {
-      return a.days.match(/\d+$/g)[0] - b.days.match(/\d+$/g)[0]
-    });
-    list2.sort((a, b) => {
-      return a.days.match(/\d+$/g)[0] - b.days.match(/\d+$/g)[0]
-    });
-    setNrBarData([...list]);
-    setInjunctionBarData([...list2]);
+    countMap.forEach((value, key) => {
+      list.push({ key, isOpr: value.isOpr, notOpr: value.notOpr });
+    })
+    console.log('1', list);
+    setBarData([...list]);
   }, [data]);
 
   useEffect(() => {
@@ -79,11 +42,17 @@ export default function InjunctionToOpr(props) {
       canvasRef.current,
       merge({}, barConfig, {
         data: {
-          labels: nrBarData.map((row) => row.days),
+          labels: barData.map((row) => row.key),
           datasets: [
             {
-              label: "NR - OPR",
-              data: nrBarData.map((row) => row.nrToOprDays),
+              label: "未下签",
+              data: barData.map((row) => row.notOpr),
+              stack: "Stack 0",
+            },
+            {
+              label: "下签",
+              data: barData.map((row) => row.isOpr),
+              stack: "Stack 0",
             },
           ],
         },
@@ -91,30 +60,7 @@ export default function InjunctionToOpr(props) {
           plugins: {
             title: {
               display: true,
-              text: "NR 与 OPR 的天数统计",
-            },
-          },
-        },
-      })
-    );
-
-    const chart2 = new Chart(
-      canvasRef2.current,
-      merge({}, barConfig, {
-        data: {
-          labels: injunctionBarData.map((row) => row.days),
-          datasets: [
-            {
-              label: "强制令 - OPR",
-              data: injunctionBarData.map((row) => row.firstInjunctionToOprDays),
-            },
-          ],
-        },
-        options: {
-          plugins: {
-            title: {
-              display: true,
-              text: "强制令与 OPR 的天数统计",
+              text: "申请强制令与 OPR 的关系",
             },
           },
         },
@@ -122,14 +68,8 @@ export default function InjunctionToOpr(props) {
     );
     return () => {
       chart.destroy();
-      chart2.destroy();
     };
-  }, [nrBarData, injunctionBarData]);
+  }, [barData]);
 
-  return (
-    <>
-      <canvas ref={canvasRef2} id="InjunctionToOpr"></canvas>
-      <canvas ref={canvasRef} id="nrToOpr"></canvas>
-    </>
-  );
+  return <canvas ref={canvasRef} id="VisaType"></canvas>;
 }
