@@ -4,7 +4,15 @@ import Chart from "chart.js/auto";
 import barConfig from "../config/bar";
 import merge from "lodash/merge";
 
-export default function InjunctionDate(props) {
+function getDaysKey(days) {
+  if (typeof days !== 'number') return false;
+  for (let i = 1; i <= 52; i++) {
+    if (days <= i * 7) return `${(i - 1) * 7}-${i * 7}`;
+  }
+  return '>=365';
+}
+
+export default function SecurityWaitInjunction(props) {
   const { data } = props;
   const canvasRef = useRef(null);
   const [barData, setBarData] = useState([]);
@@ -14,32 +22,25 @@ export default function InjunctionDate(props) {
 
     data.forEach((item) => {
       const { securityDate, firstInjunctionDate, oprDate } = item;
-      if (firstInjunctionDate) {
-        const year = dayjs(firstInjunctionDate).year();
-        const month = dayjs(firstInjunctionDate).month() + 1;
-
-        if (isNaN(year) || isNaN(month)) {
-          return console.log("isNaN Data:", firstInjunctionDate);
-        }
-
-        const key = `${year}-${month}`;
-
-        const prevValue = countMap.get(key);
-        countMap.set(key, {
-          isOpr: oprDate ? (prevValue?.isOpr || 0) + 1 : (prevValue?.isOpr || 0),
-          notOpr: oprDate ? (prevValue?.notOpr || 0) : (prevValue?.notOpr || 0) + 1,
-        });
-      }
+      if (!securityDate || !firstInjunctionDate) return;
+      const diffDays = dayjs(firstInjunctionDate).diff(dayjs(securityDate), 'day');
+      const key = getDaysKey(diffDays);
+      if (!key) return;
+      const prevValue = countMap.get(key);
+      countMap.set(key, {
+        isOpr: oprDate ? (prevValue?.isOpr || 0) + 1 : (prevValue?.isOpr || 0),
+        notOpr: oprDate ? (prevValue?.notOpr || 0) : (prevValue?.notOpr || 0) + 1,
+      })
     });
     const list = [];
     countMap.forEach((value, key) => {
       list.push({
-        yearMonth: key,
+        days: key,
         isOpr: value.isOpr,
         notOpr: value.notOpr,
       });
     });
-    list.sort((a, b) => dayjs(a.yearMonth).unix() - dayjs(b.yearMonth).unix());
+    list.sort((a, b) => a.days.match(/\d+$/g)[0] - b.days.match(/\d+$/g)[0]);
     setBarData([...list]);
   }, [data]);
 
@@ -48,15 +49,15 @@ export default function InjunctionDate(props) {
       canvasRef.current,
       merge({}, barConfig, {
         data: {
-          labels: barData.map((row) => row.yearMonth),
+          labels: barData.map((row) => row.days),
           datasets: [
             {
-              label: "强制令后等待至今下签人数",
+              label: "强制令后至今下签人数",
               data: barData.map((row) => row.isOpr),
               stack: "Stack 0",
             },
             {
-              label: "强制令后等待至今未下签人数",
+              label: "强制令后至今未下签人数",
               data: barData.map((row) => row.notOpr),
               stack: "Stack 0",
             },
@@ -66,7 +67,7 @@ export default function InjunctionDate(props) {
           plugins: {
             title: {
               display: true,
-              text: "强制令效果与月份的关系",
+              text: "强制令前安调等待时长与 OPR 的关系",
             },
           },
         },
@@ -77,5 +78,5 @@ export default function InjunctionDate(props) {
     };
   }, [barData]);
 
-  return <canvas ref={canvasRef} id="InjunctionDate"></canvas>;
+  return <canvas ref={canvasRef} id="SecurityWaitInjunction"></canvas>;
 }

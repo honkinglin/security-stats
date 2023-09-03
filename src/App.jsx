@@ -7,6 +7,7 @@ import VisaType from "./components/visa-type.jsx";
 import VisaTypeOpr from "./components/visa-type-opr.jsx";
 import InjunctionOpr from "./components/injunction-opr.jsx";
 import InjunctionDate from "./components/injunction-date.jsx";
+import SecurityWaitInjunction from "./components/security-wait-injunction.jsx";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <VisaTypeOpr data={data} />
         <InjunctionOpr data={data} />
         <InjunctionDate data={data} />
+        <SecurityWaitInjunction data={data} />
       </div>
     </main>
   );
