@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import dayjs from "dayjs";
 import Chart from "chart.js/auto";
 import barConfig from "../config/bar";
+import { CHART_COLORS } from "../config/color";
 import merge from "lodash/merge";
 
 function getMapKey(isInjunctionSuccess = "") {
@@ -45,13 +45,13 @@ export default function VisaType(props) {
           labels: barData.map((row) => row.key),
           datasets: [
             {
-              label: "未下签",
-              data: barData.map((row) => row.notOpr),
+              label: "下签",
+              data: barData.map((row) => row.isOpr),
               stack: "Stack 0",
             },
             {
-              label: "下签",
-              data: barData.map((row) => row.isOpr),
+              label: "未下签",
+              data: barData.map((row) => row.notOpr),
               stack: "Stack 0",
             },
           ],
